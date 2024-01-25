@@ -1,4 +1,3 @@
-import requests
 import os
 import atexit
 import msal
@@ -9,7 +8,13 @@ username = 'xxx@xxx.onmicrosoft.com'
 
 logging.getLogger("msal").setLevel(logging.WARN)
 
-scope = ["User.Read", "User.ReadBasic.All"]
+UserScope = ["User.Read", "User.ReadBasic.All", "User.Read.All", "User.ReadWrite.All"]
+DirectoryScope = ["Directory.Read.All", "Directory.ReadWrite.All", "Directory.AccessAsUser.All"]
+Mailscope = ["Mail.Read", "Mail.ReadWrite"]
+CalendarScope = ["Calendars.Read", "Calendars.ReadWrite", "Calendars.ReadWrite.Shared"]
+SitesScope = ["Files.ReadWrite.All", "Sites.ReadWrite.All"]
+
+scope = UserScope + DirectoryScope + Mailscope + CalendarScope + SitesScope
 
 accessToken = None
 
@@ -41,19 +46,11 @@ def get_login():
         result = app.acquire_token_interactive(scopes=scope, login_hint=username)
         if "access_token" in result:
             accessToken = result['access_token']
+            return accessToken
         else:
             print(result.get("error"))
             print(result.get("error_description"))
             print(result.get("correlation_id"))
     else:
         accessToken = result['access_token']
-    
-def get_me():
-    url = 'https://graph.microsoft.com/v1.0/me'
-    headers = {'Authorization': 'Bearer ' + accessToken}
-    response = requests.get(url, headers=headers)
-    print(response.json())
-    
-get_login()
-
-get_me()
+        return accessToken
